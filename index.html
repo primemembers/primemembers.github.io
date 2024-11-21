@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Membership</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        .membership-section, .months-section, .qr-section {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #111;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+        h1, h2 {
+            color: #0d6efd;
+        }
+        .membership-option, .month-option {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: #222;
+            cursor: pointer;
+        }
+        .membership-option:hover, .month-option:hover {
+            background: #0d6efd;
+            color: #fff;
+        }
+        .qr-section {
+            display: none;
+        }
+        .qr-section img {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            display: block;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #0d6efd;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .summary {
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .back-btn, .back-btn-inside {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 15px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-btn:hover, .back-btn-inside:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <h1>Premium Membership Selection</h1>
+
+    <div id="membershipSection" class="membership-section">
+        <h2>Select Membership Type</h2>
+        <div class="membership-option" onclick="selectMembership('Group A', 99)">
+            🅰1. Only Pure অসমীয়া Premium Channel Link - ₹99
+        </div>
+        <div class="membership-option" onclick="selectMembership('Group B', 49)">
+            🅱2. ALL অসমীয়া Premium Channel Link - ₹49
+        </div>
+        <div class="membership-option" onclick="selectMembership('Special Video', 149)">
+            💝3. Special Video Link - ₹149
+        </div>
+        <div class="membership-option" onclick="selectMembership('Lifetime', 999)">
+            🎉 Lifetime Access - ₹999 (No Duration)
+        </div>
+    </div>
+
+    <div id="monthsSection" class="months-section" style="display: none;">
+        <h2>Select Duration</h2>
+        <div class="month-option" onclick="selectMonths(1)">
+            💵 1 Month - No Discount
+        </div>
+        <div class="month-option" onclick="selectMonths(2)">
+            💵 2 Months - 20% Discount
+        </div>
+        <div class="month-option" onclick="selectMonths(3)">
+            💵 3 Months - 30% Discount
+        </div>
+    </div>
+
+    <div id="qrSection" class="qr-section">
+        <button class="back-btn-inside" onclick="goBackToMembership()">← Back to Membership Selection</button>
+        <h2>Payment Details</h2>
+        <div class="summary">
+            <p id="membershipDetails"></p>
+            <p id="discountDetails"></p>
+            <p id="finalAmount"></p>
+        </div>
+        <div id="qrCode"></div>
+        <a id="payButton" class="btn" href="#" target="_blank">Pay Now</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script>
+        let selectedType = '';
+        let baseAmount = 0;
+        let finalAmount = 0;
+        let isLifetime = false;
+
+        function goBack() {
+            // Reload page to reset
+            location.reload();
+        }
+
+        function goBackToMembership() {
+            document.getElementById('qrSection').style.display = 'none';
+            document.getElementById('membershipSection').style.display = 'block';
+        }
+
+        function selectMembership(type, amount) {
+            selectedType = type;
+            baseAmount = amount;
+
+            // If lifetime membership is selected, skip duration section
+            if (selectedType === 'Lifetime') {
+                isLifetime = true;
+                showQRPayment();
+            } else {
+                isLifetime = false;
+                // Hide membership section and show months section
+                document.getElementById('membershipSection').style.display = 'none';
+                document.getElementById('monthsSection').style.display = 'block';
+            }
+        }
+
+        function selectMonths(months) {
+            let discount = 0;
+
+            if (months === 2) discount = 0.2;
+            else if (months === 3) discount = 0.3;
+
+            finalAmount = baseAmount * months * (1 - discount);
+
+            // Show payment details
+            document.getElementById('membershipDetails').innerText = `Membership: ${selectedType}`;
+            document.getElementById('discountDetails').innerText = `Duration: ${months} Month(s) | Discount: ${discount * 100}%`;
+            document.getElementById('finalAmount').innerText = `Total Amount: ₹${finalAmount.toFixed(2)}`;
+
+            // Show QR Payment Interface
+            showQRPayment();
+        }
+
+        function showQRPayment() {
+            // If lifetime is selected, no duration, no discount
+            if (isLifetime) {
+                finalAmount = baseAmount;
+                document.getElementById('membershipDetails').innerText = `Membership: ${selectedType}`;
+                document.getElementById('discountDetails').innerText = `Duration: Lifetime | Discount: None`;
+                document.getElementById('finalAmount').innerText = `Total Amount: ₹${finalAmount.toFixed(2)}`;
+            }
+
+            // Generate UPI link for QR Code
+            const upiId = "mr-risov@ybl";
+            const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(selectedType)}&am=${finalAmount.toFixed(2)}&cu=INR`;
+
+            // Generate QR Code
+            QRCode.toCanvas(document.getElementById('qrCode'), upiLink, function (error) {
+                if (error) console.error(error);
+            });
+
+            // Set Pay Button Link
+            document.getElementById('payButton').href = upiLink;
+
+            // Show QR section
+            document.getElementById('monthsSection').style.display = 'none';
+            document.getElementById('qrSection').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
